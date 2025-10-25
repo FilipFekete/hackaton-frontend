@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useState } from 'react'
 import DotGrid from './DotGrid'
 
 const App = () => {
+    const [apiText, setApiText] = useState('')
     return (
         <div
             style={{
@@ -80,7 +81,34 @@ const App = () => {
                 <button
                     type="button"
                     aria-label="Submit"
-                    onClick={() => console.log('Submit clicked')}
+                    onClick={async () => {
+                        // fetch from proxied API and update displayed text
+                        try {
+                            setApiText('Loading...')
+                            const res = await fetch('/api/welcome', {
+                                headers: { Accept: 'application/json' },
+                            })
+
+                            if (!res.ok) {
+                                // try to get error details if server returned JSON
+                                let body = null
+                                try {
+                                    body = await res.json()
+                                } catch {
+                                    body = await res.text()
+                                }
+                                throw new Error(`HTTP ${res.status} - ${JSON.stringify(body)}`)
+                            }
+
+                            const data = await res.json()
+                            // the API returns { message: "..." }
+                            const message = data && typeof data === 'object' && 'message' in data ? data.message : JSON.stringify(data)
+                            setApiText(message)
+                        } catch (err) {
+                            // fetch failures (e.g. network / CORS) surface as a TypeError
+                            setApiText(`Error: ${err.message}`)
+                        }
+                    }}
                     style={{
                         display: 'block',
                         margin: '20px auto 0',
@@ -120,6 +148,10 @@ const App = () => {
                 >
                     Submit
                 </button>
+                {/* API response displayed here */}
+                <div style={{ marginTop: '14px', color: '#fff', minHeight: '1.2em' }} aria-live="polite">
+                    {typeof apiText === 'string' && apiText}
+                </div>
             </div>
         </div>
     )

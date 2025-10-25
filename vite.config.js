@@ -5,4 +5,17 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
+  // Dev server proxy to forward requests starting with /api to the Flask backend
+  // This avoids CORS issues during development. Requests to /api/* will be
+  // proxied to http://127.0.0.1:5000/*
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:5000',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+    },
+  },
 })
