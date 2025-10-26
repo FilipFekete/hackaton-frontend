@@ -91,7 +91,8 @@ const AnimatedList = ({
   }, [selectedIndex, keyboardNav]);
 
   return (
-    <div className={`relative w-[500px] ${className}`}>
+    <div className={`relative w-full flex justify-center ${className}`}>
+      <div style={{ width: 560 }}>
       <div
         ref={listRef}
         className={`max-h-[400px] overflow-y-auto p-4 ${
@@ -119,7 +120,20 @@ const AnimatedList = ({
             }}
           >
             <div className={`p-4 bg-[#111] rounded-lg ${selectedIndex === index ? 'bg-[#222]' : ''} ${itemClassName}`}>
-              <p className="text-white m-0">{item}</p>
+              {typeof item === 'string' ? (
+                <p className="text-white m-0">{item}</p>
+              ) : item && typeof item === 'object' ? (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: 700, color: '#fff', fontSize: 16 }}>{`ID ${item.id}`}</div>
+                  </div>
+                  <div style={{ textAlign: 'right', minWidth: 80 }}>
+                    <div style={{ fontWeight: 700, color: '#beffb3ff' }}>{item.percentage !== undefined && item.percentage !== null ? `${Math.round(item.percentage)}%` : ''}</div>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-white m-0">{String(item)}</p>
+              )}
             </div>
           </AnimatedItem>
         ))}
@@ -136,6 +150,7 @@ const AnimatedList = ({
           ></div>
         </>
       )}
+      </div>
     </div>
   );
 };

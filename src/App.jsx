@@ -93,6 +93,8 @@ const App = () => {
                     onClick={async () => {
                         // call the Flask GET /device/<id> using the inputValue
                         try {
+                            // clear the list immediately, then show loading
+                            setDevices([])
                             setLoading(true)
                             setApiText('Loading...')
 
@@ -111,11 +113,28 @@ const App = () => {
                             }
 
                             const data = await res.json()
-                            // create a friendly display string and add it to the AnimatedList
-                            const entry = `${data.name} — id:${data.id} — ${data.type} — ${data.percentage}%`
-                            setDevices((prev) => [entry, ...prev])
-                            // clear any raw-text output
-                            setApiText('')
+                            // If backend returned an array (top matches), map to structured items
+                            if (Array.isArray(data)) {
+                                const mapped = data.map((row) => {
+                                    return {
+                                        id: row['<ID>'] ?? row['ID'] ?? row['id'] ?? row['Id'] ?? row.id,
+                                        productName: row['Product name'] ?? row['Product'] ?? row.productName ?? '',
+                                        function: row['Function'] ?? row.function ?? '',
+                                        percentage: row['final percentage'] ?? row['final percentage'.trim()] ?? row.percentage ?? null,
+                                    }
+                                })
+                                // replace list with fresh mapped results
+                                setDevices(mapped)
+                                setApiText('')
+                            } else if (data && typeof data === 'object' && ('name' in data || 'id' in data)) {
+                                // legacy single-device response
+                                const entry = `${data.name} — id:${data.id} — ${data.type} — ${data.percentage}%`
+                                setDevices([entry])
+                                setApiText('')
+                            } else {
+                                // unexpected format: show raw JSON
+                                setApiText(JSON.stringify(data, null, 2))
+                            }
                         } catch (err) {
                             setApiText(`Error: ${err.message}`)
                         } finally {
