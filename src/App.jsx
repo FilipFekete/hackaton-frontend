@@ -3,6 +3,7 @@ import DotGrid from './DotGrid'
 
 const App = () => {
     const [apiText, setApiText] = useState('')
+    const [inputValue, setInputValue] = useState('')
     return (
         <div
             style={{
@@ -57,13 +58,16 @@ const App = () => {
                         marginBottom: '20px',
                         fontSize: '2rem',
                         letterSpacing: '1px',
+                        color: '#ffffffb2',
                     }}
                 >
-                    Be better than your enemies.
+                    Better than your enemies.
                 </h1>
                 <input
                     type="text"
-                    placeholder="Search..."
+                    placeholder="Type something to send to the API..."
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
                     style={{
                         padding: '12px 20px',
                         fontSize: '1rem',
@@ -77,7 +81,7 @@ const App = () => {
                     }}
                     onFocus={(e) => (e.target.style.borderColor = '#FF0000')}
                     onBlur={(e) => (e.target.style.borderColor = '#ccc')}
-                />  
+                />
                 <button
                     type="button"
                     aria-label="Submit"
@@ -86,7 +90,10 @@ const App = () => {
                         try {
                             setApiText('Loading...')
                             const res = await fetch('/api/welcome', {
-                                headers: { Accept: 'application/json' },
+                                method: 'POST',
+                                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+                                // send the input content as JSON in the request body
+                                body: JSON.stringify({ text: inputValue }),
                             })
 
                             if (!res.ok) {
