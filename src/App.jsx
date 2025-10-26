@@ -2,12 +2,14 @@ import React, { useState } from 'react'
 import DotGrid from './DotGrid'
 import BlurText from "./BlurText.jsx";
 import AnimatedList from './AnimatedList'
+import Ogs from './ogs.jsx'
 
 const App = () => {
     const [apiText, setApiText] = useState('')
     const [inputValue, setInputValue] = useState('')
     const [loading, setLoading] = useState(false)
     const [devices, setDevices] = useState([])
+
     return (
         <div
             style={{
