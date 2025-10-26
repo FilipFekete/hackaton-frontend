@@ -1,10 +1,13 @@
 import React, { useState } from 'react'
 import DotGrid from './DotGrid'
 import BlurText from "./BlurText.jsx";
+import AnimatedList from './AnimatedList'
 
 const App = () => {
     const [apiText, setApiText] = useState('')
     const [inputValue, setInputValue] = useState('')
+    const [loading, setLoading] = useState(false)
+    const [devices, setDevices] = useState([])
     return (
         <div
             style={{
@@ -65,7 +68,7 @@ const App = () => {
                 </div>
                 <input
                     type="text"
-                    placeholder="Type something to send to the API..."
+                    placeholder="Type enemy device ID..."
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     style={{
@@ -84,20 +87,18 @@ const App = () => {
                 />
                 <button
                     type="button"
-                    aria-label="Submit"
+                    aria-label="Get Device"
                     onClick={async () => {
-                        // fetch from proxied API and update displayed text
+                        // call the Flask GET /device/<id> using the inputValue
                         try {
+                            setLoading(true)
                             setApiText('Loading...')
-                            const res = await fetch('/api/welcome', {
-                                method: 'POST',
-                                headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
-                                // send the input content as JSON in the request body
-                                body: JSON.stringify({ text: inputValue }),
-                            })
+
+                            const id = inputValue && inputValue.trim() !== '' ? inputValue.trim() : '1'
+                            const url = `/api/device/${encodeURIComponent(id)}`
+                            const res = await fetch(url, { method: 'GET', headers: { Accept: 'application/json' } })
 
                             if (!res.ok) {
-                                // try to get error details if server returned JSON
                                 let body = null
                                 try {
                                     body = await res.json()
@@ -108,12 +109,15 @@ const App = () => {
                             }
 
                             const data = await res.json()
-                            // the API returns { message: "..." }
-                            const message = data && typeof data === 'object' && 'message' in data ? data.message : JSON.stringify(data)
-                            setApiText(message)
+                            // create a friendly display string and add it to the AnimatedList
+                            const entry = `${data.name} — id:${data.id} — ${data.type} — ${data.percentage}%`
+                            setDevices((prev) => [entry, ...prev])
+                            // clear any raw-text output
+                            setApiText('')
                         } catch (err) {
-                            // fetch failures (e.g. network / CORS) surface as a TypeError
                             setApiText(`Error: ${err.message}`)
+                        } finally {
+                            setLoading(false)
                         }
                     }}
                     style={{
@@ -152,11 +156,23 @@ const App = () => {
                         e.currentTarget.style.opacity = '0.78';
                         e.currentTarget.style.backgroundColor = '#FF3333';
                     }}
+                    disabled={loading}
+                    aria-busy={loading}
                 >
                     Submit
                 </button>
-                {/* API response displayed here */}
-                <div style={{ marginTop: '14px', color: '#fff', minHeight: '1.2em' }} aria-live="polite">
+                <div style={{ display: 'flex', justifyContent: 'center', marginTop: 18 }}>
+                    <div style={{ width: '560px' }}>
+                        <AnimatedList
+                            items={devices}
+                            onItemSelect={(item, index) => console.log(item, index)}
+                            showGradients={true}
+                            enableArrowNavigation={true}
+                            displayScrollbar={true}
+                        />
+                    </div>
+                </div>
+                <div style={{ marginTop: '14px', color: '#fff', minHeight: '1.2em', whiteSpace: 'pre-wrap', fontFamily: 'Menlo, Monaco, monospace', textAlign: 'left', maxWidth: '560px', marginLeft: 'auto', marginRight: 'auto' }} aria-live="polite">
                     {typeof apiText === 'string' && apiText}
                 </div>
             </div>
