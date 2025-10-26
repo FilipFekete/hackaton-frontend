@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import DotGrid from './DotGrid'
+import BlurText from "./BlurText.jsx";
 
 const App = () => {
     const [apiText, setApiText] = useState('')
@@ -53,16 +54,15 @@ const App = () => {
                     fontFamily: 'Arial, sans-serif',
                 }}
             >
-                <h1
-                    style={{
-                        marginBottom: '20px',
-                        fontSize: '2rem',
-                        letterSpacing: '1px',
-                        color: '#ffffffb2',
-                    }}
-                >
-                    Better than your enemies.
-                </h1>
+                <div>
+                    <BlurText
+                        text="Better Than Your Enemies."
+                        delay={150}
+                        animateBy="words"
+                        direction="top"
+                        className="text-6xl mb-8"
+                    />
+                </div>
                 <input
                     type="text"
                     placeholder="Type something to send to the API..."
